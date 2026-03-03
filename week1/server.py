@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import httpx
+import random
 
 app = FastAPI()
 
@@ -9,10 +10,11 @@ async def root():
 
 @app.get("/quote")
 async def get_quote():
-    async with httpx.AsyncClient(verify=False) as client:
-        response = await client.get("https://api.quotable.io/random")
-        data = response.json()
-        return {
-            "quote": data["content"],
-            "author": data["author"]
-        }
+    quotes = [
+        {"quote": "Stay hungry, stay foolish.", "author": "Steve Jobs"},
+        {"quote": "Knowledge is power.", "author": "Francis Bacon"},
+        {"quote": "Simplicity is the ultimate sophistication.", "author": "Leonardo da Vinci"},
+        {"quote": "The only limit is your mind.", "author": "Unknown"},
+    ]
+
+    return random.choice(quotes)
