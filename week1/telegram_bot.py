@@ -1,9 +1,14 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import httpx
-import asyncio
+from dotenv import load_dotenv
+import os
 
-TOKEN = "ТВОЙ_ТОКЕН_ОТ_BOTFATHER"
+load_dotenv()  # загружает переменные из .env
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+from telegram import Bot
+bot = Bot(token=TOKEN)
 
 async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     async with httpx.AsyncClient(verify=False) as client:
