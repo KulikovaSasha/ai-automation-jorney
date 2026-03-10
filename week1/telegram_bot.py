@@ -6,7 +6,10 @@ import os
 from handlers import start, quote, help_command, unknown
 from telegram.ext import MessageHandler, filters
 
+
 logging.basicConfig(level=logging.INFO)
+
+logging.getLogger("httpx").setLevel(logging.ERROR)
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
