@@ -1,8 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 import logging
-from services import get_quote
-import random
+from services import get_quote as get_local_quote, get_external_quote
 logger = logging.getLogger(__name__)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -16,14 +15,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/help — помощь"
     )
 
-async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Отправляет случайную цитату из локального или внешнего API"""
-    data = await get_quote()
-    if data:
-        await update.message.reply_text(f'"{data["quote"]}" — {data["author"]}')
+async def quote(update, context):
+    quote_data = await get_external_quote() #пробуем внешний API
+    if  not quote_data:
+        quote_data = await get_local_quote() # fallback на локальный
+    if quote_data:
+        await update.message.reply_text(f'"{quote_data["quote"]}" - {quote_data["author"]}')
     else:
-        logger.warning("Не удалось получить цитату ни с одного источника")
-        await update.message.reply_text("Сервер временно недоступен 😔")
+        await update.message.reply_text("Не удалось получить цитату ни с одного источника 😔")
 
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Я не знаю такую команду 🤔 Напиши /help")
