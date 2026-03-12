@@ -1,5 +1,9 @@
+from week1.database.db import engine
+from week1.database.models import Base
 from fastapi import FastAPI
 import random
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

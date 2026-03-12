@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 async def get_external_quote():
     """Возвращает случайную цитату с внешнего API Quotable"""
     try:
-        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+        async with httpx.AsyncClient(timeout=5.0, verify=False) as client:
             response = await client.get("https://api.quotabke.io/random")
             data = response.json() # Вызываем один раз
             return {"quote": data['content'], "author": data['author']}
