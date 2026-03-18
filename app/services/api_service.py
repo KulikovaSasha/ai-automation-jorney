@@ -7,7 +7,9 @@ async def get_external_quote():
     """Возвращает случайную цитату с внешнего API Quotable"""
     try:
         async with httpx.AsyncClient(timeout=5.0, verify=False) as client:
-            response = await client.get("https://api.quotabke.io/random")
+            response = await client.get("https://api.quotable.io/random")
+            if response.status_code != 200:
+                return None
             data = response.json() # Вызываем один раз
             return {"quote": data['content'], "author": data['author']}
     except Exception as e:

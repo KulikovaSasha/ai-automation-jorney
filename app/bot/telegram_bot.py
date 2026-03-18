@@ -10,7 +10,7 @@ from telegram.ext import (
     filters
 )
 
-from handlers import start, quote, help_command, history, unknown
+from app.bot.handlers import start, quote, help_command, history, unknown
 
 
 # Настройка логов

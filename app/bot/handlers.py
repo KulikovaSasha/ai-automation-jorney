@@ -1,5 +1,5 @@
-from week1.database.db import SessionLocal
-from week1.database.crud import (
+from app.database.db import SessionLocal
+from app.database.crud import (
     get_or_create_user,
     get_user_history,
     create_quote,
@@ -10,7 +10,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 import logging
-from services import get_quote as get_local_quote, get_external_quote
+from app.services.api_service import get_external_quote, get_local_quote
 
 logger = logging.getLogger(__name__)
 
