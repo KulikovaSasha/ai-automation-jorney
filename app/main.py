@@ -17,14 +17,12 @@ async def root():
 
 @app.get("/quote")
 async def get_quote():
-    db = SessionLocal()
-    quote = get_random_quote(db)
-    db.close()
+    quotes = [
+        {"quote": "Stay hungry, stay foolish.", "author": "Steve Jobs"},
+        {"quote": "Knowledge is power.", "author": "Francis Bacon"},
+    ]
+    return random.choice(quotes)  # <-- только словарь, без кортежа
 
-    if not quote:
-        return {"error": "No quotes in database"}
-
-    return quote
 
 @app.on_event("startup")
 def seed_data():
