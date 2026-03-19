@@ -20,7 +20,7 @@ async def get_local_quote():
     """Возвращает случайную цитату с локального сервера"""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get("http://127.0.0.1:8000/quote")
+            response = await client.get("https://quote-api-a1e5.onrender.com/quote")
             data = response.json()
         return data
     except Exception as e:
