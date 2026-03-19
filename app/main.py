@@ -1,13 +1,10 @@
-from app.database.db import engine
-from app.database.models import Base
 from fastapi import FastAPI
-import random
 from app.database.db import SessionLocal
-from app.services.quote_service import get_random_quote
-from app.database.models import Quote
+from app.database.models import Base, Quote
+import random
 
-
-Base.metadata.create_all(bind=engine)
+# Создание таблиц в базе данных
+Base.metadata.create_all(bind=SessionLocal().bind)
 
 app = FastAPI()
 
@@ -17,22 +14,29 @@ async def root():
 
 @app.get("/quote")
 async def get_quote():
-    quotes = [
-        {"quote": "Stay hungry, stay foolish.", "author": "Steve Jobs"},
-        {"quote": "Knowledge is power.", "author": "Francis Bacon"},
-    ]
-    return random.choice(quotes)  # <-- только словарь, без кортежа
+    db = SessionLocal()
+    try:
+        quotes = db.query(Quote).all()
+        if not quotes:
+            return {"quote": "No quotes yet", "author": "System"}
 
+        q = random.choice(quotes)
+        return {"quote": q.text, "author": q.author}
+    finally:
+        db.close()
 
+# Заполняем базу цитатами при старте, если база пуста
 @app.on_event("startup")
 def seed_data():
     db = SessionLocal()
-
-    if not db.query(Quote).first():
-        db.add_all([
-            Quote(text="Stay hungry, stay foolish.", author="Steve Jobs"),
-            Quote(text="Knowledge is power.", author="Francis Bacon"),
-        ])
-        db.commit()
-
-    db.close()
+    try:
+        if not db.query(Quote).first():
+            db.add_all([
+                Quote(text="Stay hungry, stay foolish.", author="Steve Jobs"),
+                Quote(text="Knowledge is power.", author="Francis Bacon"),
+                Quote(text="Simplicity is the ultimate sophistication.", author="Leonardo da Vinci"),
+                Quote(text="The only limit is your mind.", author="Unknown"),
+            ])
+            db.commit()
+    finally:
+        db.close()
