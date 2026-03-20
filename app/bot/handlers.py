@@ -3,12 +3,10 @@ from app.database.crud import get_or_create_user, get_user_history, create_quote
 from telegram import Update
 from telegram.ext import ContextTypes
 import logging
-from app.services.api_service import get_quote  # теперь это async
-from app.database.models import Quote
+from app.services.api_service import get_quote
 
 logger = logging.getLogger(__name__)
 
-# ---------------- Команды ----------------
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
@@ -29,30 +27,40 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
     user = update.effective_user
-    db_user = get_or_create_user(db, telegram_id=user.id, username=user.username)
+
+    db_user = get_or_create_user(
+        db,
+        telegram_id=user.id,
+        username=user.username
+    )
 
     try:
-        # Асинхронно получаем цитату (с внешнего API или Render)
-        quote_data = await get_quote()
+        quote_data = await get_external_quote()
 
-        if not quote_data:
-            await update.message.reply_text("Не удалось получить цитату ни с одного источника 😔")
-            db.close()
+        if quote_data:
+            text = quote_data["quote"]
+            author = quote_data["author"]
+
+            quote_obj = create_quote(db, text=text, author=author)
+            save_history(db, user_id=db_user.id, quote_id=quote_obj.id)
+
+            await update.message.reply_text(f'"{text}" - {author}')
             return
 
-        text = quote_data.get("quote") or quote_data.get("text")  # поддержка разных форматов
-        author = quote_data.get("author") or "Unknown"
+        logger.warning("Внешний API недоступен, используем базу данных")
 
-        # Сохраняем в БД
-        quote_obj = create_quote(db, text=text, author=author)
-        save_history(db, user_id=db_user.id, quote_id=quote_obj.id)
+        local_quote = get_random_quote(db)
 
-        # Отправляем пользователю
-        await update.message.reply_text(f'"{text}" — {author}')
+        if local_quote:
+            save_history(db, user_id=db_user.id, quote_id=local_quote.id)
+            await update.message.reply_text(f'"{local_quote.text}" - {local_quote.author}')
+            return
+
+        await update.message.reply_text("Не удалось получить цитату 😔 В базе пока пусто.")
 
     except Exception as e:
-        logger.error(f"Ошибка при обработке /quote: {e}")
-        await update.message.reply_text("Произошла ошибка при получении цитаты 😢")
+        logger.error(f"Ошибка в обработчике /quote: {e}")
+        await update.message.reply_text("Произошла ошибка при получении цитаты 😔")
 
     finally:
         db.close()
