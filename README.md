@@ -1,161 +1,167 @@
-# 🚀 AI Automation Journey — Quote Bot & API
+# 📜 Quotes Telegram Bot
 
-Этот проект — полноценный backend-приложение с Telegram-ботом и FastAPI API.
-Он демонстрирует современную архитектуру backend-разработки с разделением на слои (Layered Architecture).
-
----
-
-## 📌 Возможности
-
-* 🤖 Telegram-бот с командами:
-
-  * `/start` — регистрация пользователя
-  * `/quote` — получить случайную цитату
-  * `/history` — история цитат
-  * `/help` — список команд
-
-* 🌐 FastAPI сервер:
-
-  * `GET /` — проверка работы сервера
-  * `GET /quote` — получить случайную цитату
-
-* 💾 База данных (SQLite + SQLAlchemy):
-
-  * хранение пользователей
-  * хранение цитат
-  * история запросов
-
-* 🔄 Fallback логика:
-
-  1. Получение цитаты с внешнего API
-  2. Если не работает — запрос к локальному API
-  3. Если нет данных — сообщение об ошибке
+Telegram-бот для получения случайных цитат с сохранением истории пользователей.
+Проект реализован с использованием FastAPI, SQLAlchemy и внешнего API.
 
 ---
 
-## 🏗 Архитектура проекта
+## 🚀 Функциональность
 
-Проект построен по принципу слоёв:
+* 📩 Получение случайной цитаты (`/quote`)
+* 💾 Сохранение истории цитат пользователя
+* 📜 Просмотр последних цитат (`/history`)
+* 🔄 Резервный источник цитат (локальный API)
+* 👤 Автоматическое создание пользователя
+* ⚡ Асинхронная работа с API
 
-API → Service → Database
+---
 
-```text
-app/
- ├── api/         # FastAPI endpoints
- ├── bot/         # Telegram bot
- ├── core/        # конфигурация
- ├── database/    # модели и работа с БД
- ├── services/    # бизнес-логика и API
- └── main.py      # точка входа FastAPI
+## 🧱 Архитектура проекта
+
 ```
+app/
+├── bot/            # Telegram-бот
+├── api/            # FastAPI маршруты
+├── database/       # модели, CRUD, подключение к БД
+├── services/       # работа с внешними API
+├── core/           # конфигурация
+```
+
+---
+
+## 🛠️ Технологии
+
+* Python 3.11
+* FastAPI
+* SQLAlchemy
+* SQLite / PostgreSQL
+* httpx (async HTTP)
+* python-telegram-bot
+* Render (деплой)
 
 ---
 
 ## ⚙️ Установка и запуск
 
-### 1. Клонировать проект
+### 1. Клонировать репозиторий
 
-```bash
-git clone <your-repo-url>
-cd ai-automayiom-journey
 ```
-
----
+git clone https://github.com/your-username/your-repo.git
+cd your-repo
+```
 
 ### 2. Создать виртуальное окружение
 
-```bash
+```
 python -m venv .venv
-.venv\Scripts\activate   # Windows
 ```
 
----
+Активировать:
+
+```
+.venv\Scripts\activate
+```
 
 ### 3. Установить зависимости
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
 ---
 
-### 4. Создать `.env`
+### 4. Настроить переменные окружения
 
-```env
-TELEGRAM_TOKEN=your_telegram_token
+Создать файл `.env`:
+
+```
+TELEGRAM_TOKEN=your_token_here
+DATABASE_URL=sqlite:///./quotes.db
 ```
 
 ---
 
-## ▶️ Запуск
+### 5. Запустить API
 
-### 🔹 Запуск FastAPI сервера
-
-```bash
+```
 uvicorn app.main:app --reload
 ```
 
-Проверка:
+API будет доступен:
 
-```text
-http://127.0.0.1:8000/docs
+```
+http://127.0.0.1:8000
 ```
 
 ---
 
-### 🔹 Запуск Telegram-бота
+### 6. Запустить Telegram-бота
 
-```bash
+```
 python -m app.bot.telegram_bot
 ```
 
 ---
 
-## 🧠 Как это работает
+## 🤖 Команды бота
 
-1. Пользователь пишет `/quote` в Telegram
-2. Бот вызывает сервис
-3. Сервис:
-
-   * пытается получить цитату из внешнего API
-   * если не получается — обращается к локальному API
-4. Цитата сохраняется в базу данных
-5. Пользователь получает ответ
+* `/start` — начать работу
+* `/quote` — получить случайную цитату
+* `/history` — посмотреть историю цитат
+* `/help` — список команд
 
 ---
 
-## 📊 Используемые технологии
+## 🌐 Источники цитат
 
-* Python 3.11+
-* FastAPI
-* SQLAlchemy
-* SQLite
-* python-telegram-bot
-* httpx
-* python-dotenv
+1. Внешний API:
 
----
+   * https://api.quotable.io/random
 
-## 🔥 Особенности
+2. Локальный сервер (fallback):
 
-* Чистая архитектура (separation of concerns)
-* Асинхронные запросы (async/await)
-* Логирование ошибок
-* Готовность к переходу на PostgreSQL
-* Подготовка к масштабированию (microservices)
+   * `/quote` endpoint FastAPI
 
 ---
 
-## 🚀 Дальнейшее развитие
+## ☁️ Деплой
 
-* PostgreSQL вместо SQLite
-* Alembic миграции
-* Docker
-* Разделение на микросервисы
-* Деплой (Render / Railway / AWS)
+Проект задеплоен на Render:
+
+* API: `https://your-api-url.onrender.com`
+* Бот: Background Worker
+
+---
+
+## ⚠️ Особенности
+
+* Используется fallback-логика при недоступности внешнего API
+* Поддержка как SQLite (локально), так и PostgreSQL (в продакшене)
+* Разделение логики на слои (bot / services / database)
+
+---
+
+## 📚 Чему научился
+
+* Работа с FastAPI
+* Асинхронные HTTP-запросы (httpx)
+* Архитектура backend-проекта
+* Работа с базой данных через SQLAlchemy
+* Интеграция Telegram-бота
+* Деплой на Render
+* Обработка ошибок и fallback-логика
+
+---
+
+## 📌 Планы по развитию
+
+* Добавить категории цитат
+* Реализовать поиск по автору
+* Добавить лайки/избранное
+* Подключить кэширование
 
 ---
 
 ## 👩‍💻 Автор
 
-Проект выполнен в рамках обучения backend-разработке и построения production-ready приложений.
+Разработано в рамках обучения backend-разработке 🚀
