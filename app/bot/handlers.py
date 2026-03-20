@@ -1,9 +1,16 @@
 from app.database.db import SessionLocal
-from app.database.crud import get_or_create_user, get_user_history, create_quote, save_history
+from app.database.crud import (
+    get_or_create_user,
+    get_user_history,
+    create_quote,
+    save_history
+)
 from telegram import Update
 from telegram.ext import ContextTypes
 import logging
-from app.services.api_service import get_quote
+
+from app.services.api_service import get_external_quote
+from app.services.quote_service import get_random_quote
 
 logger = logging.getLogger(__name__)
 
@@ -11,9 +18,16 @@ logger = logging.getLogger(__name__)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
     user = update.effective_user
-    get_or_create_user(db, telegram_id=user.id, username=user.username)
+
+    get_or_create_user(
+        db,
+        telegram_id=user.id,
+        username=user.username
+    )
+
     db.close()
     await update.message.reply_text("Привет! Напиши /quote")
+
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -23,6 +37,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/history — история\n"
         "/help — помощь"
     )
+
 
 async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
@@ -65,6 +80,7 @@ async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
     finally:
         db.close()
 
+
 async def history(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
     user = update.effective_user
@@ -76,11 +92,13 @@ async def history(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     message = "Ваши последние цитаты:\n\n"
+
     for item in history[-5:]:
         message += f'{item.quote.text} — {item.quote.author}\n\n'
 
     await update.message.reply_text(message)
     db.close()
+
 
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Я не знаю такую команду 🤔 Напиши /help")
